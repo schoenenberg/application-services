@@ -6,16 +6,14 @@
 //!
 //! Depending on platform, this may call various libraries or have other dependencies.
 //!
-//! This uses prime256v1 EC encryption that should come from internal crypto calls. The "application-services"
-//! module compiles openssl, however, so might be enough to tie into that.
+//! This uses prime256v1 EC encryption that should come from internal crypto calls.
 
 use crate::error;
-use ece::{
+use rc_crypto::ece::{
     Aes128GcmEceWebPushImpl, AesGcmEceWebPushImpl, AesGcmEncryptedBlock, EcKeyComponents,
     LocalKeyPair, LocalKeyPairImpl,
 };
-use log;
-use openssl::rand::rand_bytes;
+use rc_crypto::rand;
 use serde_derive::*;
 
 pub const SER_AUTH_LENGTH: usize = 16;
@@ -111,7 +109,7 @@ pub struct Crypto;
 
 pub fn get_bytes(size: usize) -> error::Result<Vec<u8>> {
     let mut bytes = vec![0u8; size];
-    rand_bytes(bytes.as_mut_slice())?;
+    rand::fill(&mut bytes)?;
     Ok(bytes)
 }
 
@@ -227,12 +225,12 @@ impl Cryptography for Crypto {
             }
         };
         AesGcmEceWebPushImpl::decrypt(&key.key_pair()?, &key.auth, &block)
-            .map_err(|e| error::ErrorKind::OpenSSLError(format!("{:?}", e)).into())
+            .map_err(|_| error::ErrorKind::EncryptionError("Decryption error".to_owned()).into())
     }
 
     fn decrypt_aes128gcm(key: &Key, content: &[u8]) -> error::Result<Vec<u8>> {
         Aes128GcmEceWebPushImpl::decrypt(&key.key_pair()?, &key.auth, &content)
-            .map_err(|e| error::ErrorKind::OpenSSLError(format!("{:?}", e)).into())
+            .map_err(|_| error::ErrorKind::EncryptionError("Decryption error".to_owned()).into())
     }
 }
 

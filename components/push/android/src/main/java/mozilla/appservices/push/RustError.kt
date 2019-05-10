@@ -14,7 +14,7 @@ import com.sun.jna.Structure
 // Mirror the Rust errors from push/error/lib.rs
 open class PushError(msg: String) : Exception(msg)
 open class InternalPanic(msg: String) : PushError(msg)
-open class OpenSSLError(msg: String) : PushError(msg)
+open class CryptoError(msg: String) : PushError(msg)
 open class CommunicationError(msg: String) : PushError(msg)
 open class CommunicationServerError(msg: String) : PushError(msg)
 open class AlreadyRegisteredError : PushError(
@@ -61,7 +61,7 @@ open class RustError : Structure() {
         }
         val message = this.consumeErrorMessage()
         when (code) {
-            24 -> return OpenSSLError(message)
+            24 -> return CryptoError(message)
             25 -> return CommunicationError(message)
             26 -> return CommunicationServerError(message)
             27 -> return AlreadyRegisteredError()
