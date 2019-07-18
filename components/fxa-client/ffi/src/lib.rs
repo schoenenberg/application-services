@@ -289,6 +289,19 @@ pub extern "C" fn fxa_get_access_token(
     })
 }
 
+#[no_mangle]
+pub extern "C" fn fxa_check_authorization_status(
+    handle: u64,
+    scope: FfiStr<'_>,
+    error: &mut ExternError,
+) -> ByteBuffer {
+    log::debug!("fxa_check_authorization_status");
+    ACCOUNTS.call_with_result_mut(error, handle, |fxa| {
+        let scope = scope.as_str();
+        fxa.check_authorization_status(scope)
+    })
+}   
+
 /// This method should be called when a request made with
 /// an OAuth token failed with an authentication error.
 /// It clears the internal cache of OAuth access tokens,

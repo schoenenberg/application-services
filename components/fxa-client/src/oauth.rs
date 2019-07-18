@@ -82,6 +82,54 @@ impl FirefoxAccount {
         Ok(token_info)
     }
 
+    /// Check whether access token is valid using the saved refresh token.
+    /// If there is no refresh token held or if it is not authorized,
+    /// Error is thrown.
+    pub fn check_authorization_status(&mut self, scope: &str) -> Result<IntrospectInfo> {
+        if scope.contains(' ') {
+            return Err(ErrorKind::MultipleScopesRequested.into());
+        }
+        let resp = match self.state.refresh_token {
+            Some(ref refresh_token) => {
+                if refresh_token.scopes.contains(scope) {
+                    self.client.oauth_introspection_with_refresh_token(
+                        &self.state.config,
+                        &refresh_token.token,
+                        &[scope],
+                    )?
+                } else {
+                    return Err(ErrorKind::NoCachedToken(scope.to_string()).into());
+                }
+            }
+            None => {
+                #[cfg(feature = "browserid")]
+                {
+                    match Self::session_token_from_state(&self.state.login_state) {
+                        Some(session_token) => self.client.oauth_introspection_with_refresh_token(
+                            &self.state.config,
+                            session_token,
+                            &[scope],
+                        )?,
+                        None => return Err(ErrorKind::NoCachedToken(scope.to_string()).into()),
+                    }
+                }
+                #[cfg(not(feature = "browserid"))]
+                {
+                    return Err(ErrorKind::NoCachedToken(scope.to_string()).into());
+                }
+            }
+        };
+        // let since_epoch = SystemTime::now()
+        //     .duration_since(UNIX_EPOCH)
+        //     .map_err(|_| ErrorKind::IllegalState("Current date before Unix Epoch."))?;
+        // let expires_at = since_epoch.as_secs() + resp.expires_in;
+        let token_info = IntrospectInfo {
+            active: resp.active,
+            token_type: resp.token_type,
+        };
+        Ok(token_info)
+    } 
+
     /// Initiate a pairing flow and return a URL that should be navigated to.
     ///
     /// * `pairing_url` - A pairing URL obtained by scanning a QR code produced by
@@ -298,6 +346,21 @@ impl std::fmt::Debug for AccessTokenInfo {
             .field("scope", &self.scope)
             .field("key", &self.key)
             .field("expires_at", &self.expires_at)
+            .finish()
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+pub struct IntrospectInfo {
+    pub active: bool,
+    pub token_type: String
+}
+
+impl std::fmt::Debug for IntrospectInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("IntrospectInfo")
+            .field("active", &self.active)
+            .field("token_type", &self.token_type)
             .finish()
     }
 }
