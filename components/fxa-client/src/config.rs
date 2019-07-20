@@ -140,7 +140,7 @@ impl Config {
             // and the openid response has been switched to the new endpoint.
             // token_endpoint: openid_resp.token_endpoint,
             token_endpoint: format!("{}/v1/oauth/token", resp.auth_server_base_url),
-            introspection_endpoint: format!("{}/v1/introspect", resp.auth_server_base_url),
+            introspection_endpoint: format!("{}/v1/introspect", resp.oauth_server_base_url),
             userinfo_endpoint: openid_resp.userinfo_endpoint,
         };
         let rc = Arc::new(remote_config);

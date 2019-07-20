@@ -22,6 +22,11 @@ message AccessTokenInfo {
     required uint64 expires_at = 4;
 }
 
+message IntrospectInfo {
+    required bool active = 1;
+    required string token_type = 2;
+}
+
 message ScopedKey {
     required string kty = 1;
     required string scope = 2;

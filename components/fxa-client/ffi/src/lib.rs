@@ -298,7 +298,7 @@ pub extern "C" fn fxa_check_authorization_status(
     log::debug!("fxa_check_authorization_status");
     ACCOUNTS.call_with_result_mut(error, handle, |fxa| {
         let scope = scope.as_str();
-        fxa.check_authorization_status(scope)
+        fxa.check_authorization_status()
     })
 }   
 

@@ -85,37 +85,18 @@ impl FirefoxAccount {
     /// Check whether access token is valid using the saved refresh token.
     /// If there is no refresh token held or if it is not authorized,
     /// Error is thrown.
-    pub fn check_authorization_status(&mut self, scope: &str) -> Result<IntrospectInfo> {
-        if scope.contains(' ') {
-            return Err(ErrorKind::MultipleScopesRequested.into());
-        }
+    pub fn check_authorization_status(&mut self) -> Result<IntrospectInfo> {
         let resp = match self.state.refresh_token {
             Some(ref refresh_token) => {
-                if refresh_token.scopes.contains(scope) {
-                    self.client.oauth_introspection_with_refresh_token(
-                        &self.state.config,
-                        &refresh_token.token,
-                        &[scope],
-                    )?
-                } else {
-                    return Err(ErrorKind::NoCachedToken(scope.to_string()).into());
-                }
+                self.client.oauth_introspection_with_refresh_token(
+                    &self.state.config,
+                    &refresh_token.token
+                )?
             }
             None => {
-                #[cfg(feature = "browserid")]
-                {
-                    match Self::session_token_from_state(&self.state.login_state) {
-                        Some(session_token) => self.client.oauth_introspection_with_refresh_token(
-                            &self.state.config,
-                            session_token,
-                            &[scope],
-                        )?,
-                        None => return Err(ErrorKind::NoCachedToken(scope.to_string()).into()),
-                    }
-                }
                 #[cfg(not(feature = "browserid"))]
                 {
-                    return Err(ErrorKind::NoCachedToken(scope.to_string()).into());
+                    return Err(ErrorKind::NoRefreshToken.into());
                 }
             }
         };
@@ -350,19 +331,10 @@ impl std::fmt::Debug for AccessTokenInfo {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct IntrospectInfo {
     pub active: bool,
     pub token_type: String
-}
-
-impl std::fmt::Debug for IntrospectInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("IntrospectInfo")
-            .field("active", &self.active)
-            .field("token_type", &self.token_type)
-            .finish()
-    }
 }
 
 #[cfg(test)]

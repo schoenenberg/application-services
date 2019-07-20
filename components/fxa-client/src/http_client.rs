@@ -28,8 +28,7 @@ pub trait FxAClient {
     fn oauth_introspection_with_refresh_token(
         &self,
         config: &Config,
-        refresh_token: &str,
-        scopes: &[&str],
+        refresh_token: &str
     ) -> Result<IntrospectResponse>;
     fn duplicate_session(
         &self,
@@ -140,8 +139,7 @@ impl FxAClient for Client {
     fn oauth_introspection_with_refresh_token(  // TODO
         &self,
         config: &Config,
-        refresh_token: &str,
-        scopes: &[&str],
+        refresh_token: &str
     ) -> Result<IntrospectResponse> {
         let body = json!({
             "token_type_hint": "refresh_token",

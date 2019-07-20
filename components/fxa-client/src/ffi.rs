@@ -73,6 +73,15 @@ impl From<AccessTokenInfo> for msg_types::AccessTokenInfo {
     }
 }
 
+impl From<IntrospectInfo> for msg_types::IntrospectInfo {
+    fn from(a: IntrospectInfo) -> Self {
+        msg_types::IntrospectInfo {
+            active: a.active,
+            token_type: a.token_type
+        }
+    }
+}
+
 impl From<ScopedKey> for msg_types::ScopedKey {
     fn from(sk: ScopedKey) -> Self {
         msg_types::ScopedKey {
@@ -221,6 +230,8 @@ implement_into_ffi_by_protobuf!(msg_types::Profile);
 implement_into_ffi_by_delegation!(Profile, msg_types::Profile);
 implement_into_ffi_by_protobuf!(msg_types::AccessTokenInfo);
 implement_into_ffi_by_delegation!(AccessTokenInfo, msg_types::AccessTokenInfo);
+implement_into_ffi_by_protobuf!(msg_types::IntrospectInfo);
+implement_into_ffi_by_delegation!(IntrospectInfo, msg_types::IntrospectInfo);
 implement_into_ffi_by_protobuf!(msg_types::Device);
 implement_into_ffi_by_delegation!(Device, msg_types::Device);
 implement_into_ffi_by_delegation!(AccountEvent, msg_types::AccountEvent);
