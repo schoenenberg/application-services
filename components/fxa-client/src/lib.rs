@@ -16,7 +16,7 @@ use crate::{
     oauth::{OAuthFlow, RefreshToken},
     scoped_keys::ScopedKey,
 };
-pub use crate::{config::Config, oauth::AccessTokenInfo, profile::Profile};
+pub use crate::{config::Config, oauth::AccessTokenInfo, oauth::IntrospectInfo, profile::Profile};
 use lazy_static::lazy_static;
 use ring::rand::SystemRandom;
 use serde_derive::*;

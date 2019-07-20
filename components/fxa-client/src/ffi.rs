@@ -15,7 +15,7 @@
 use crate::{
     commands,
     device::{Capability as DeviceCapability, Device, PushSubscription, Type as DeviceType},
-    msg_types, send_tab, AccessTokenInfo, AccountEvent, Error, ErrorKind, Profile, ScopedKey,
+    msg_types, send_tab, AccessTokenInfo, IntrospectInfo, AccountEvent, Error, ErrorKind, Profile, ScopedKey,
 };
 use ffi_support::{
     implement_into_ffi_by_delegation, implement_into_ffi_by_protobuf, ErrorCode, ExternError,

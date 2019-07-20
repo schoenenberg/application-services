@@ -254,6 +254,23 @@ open class FirefoxAccount {
         }
     }
 
+    /// Check whether the refreshToken is active
+    open func checkAuthorizationStatus(completionHandler: @escaping (IntrospectInfo?, Error?) -> Void) {
+        queue.async {
+            do {
+                let infoBuffer = try FirefoxAccountError.unwrap { err in
+                    fxa_check_authorization_status(self.raw, scope, err)
+                }
+                let msg = try! MsgTypes_IntrospectInfo(serializedData: Data(rustBuffer: infoBuffer))
+                fxa_bytebuffer_free(infoBuffer)
+                let tokenInfo = IntrospectInfo(msg: msg)
+                DispatchQueue.main.async { completionHandler(tokenInfo, nil) }
+            } catch {
+                DispatchQueue.main.async { completionHandler(nil, error) }
+            }
+        }
+    }
+
     /// This method should be called when a request made with
     /// an OAuth token failed with an authentication error.
     /// It clears the internal cache of OAuth access tokens,
